@@ -21,6 +21,7 @@
 // implementation depending on how you have implemented it so far. Before
 // jumping into any code changes, make sure you understand what the code in this
 // test case is trying to do.
+#![feature(proc_macro_hygiene)]
 
 use seq::seq;
 

@@ -37,6 +37,7 @@
 //
 //   - A stable workaround for procedural macros inside a function body:
 //     https://github.com/dtolnay/proc-macro-hack
+#![feature(proc_macro_hygiene)]
 
 use seq::seq;
 

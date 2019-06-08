@@ -5,6 +5,7 @@
 // The generated code would be:
 //
 //     [Proc::new(0), Proc::new(1), ..., Proc::new(255),]
+#![feature(proc_macro_hygiene)]
 
 use seq::seq;
 
