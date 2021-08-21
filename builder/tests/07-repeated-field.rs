@@ -18,12 +18,16 @@
 // attributes do not correspond to a macro invocation on their own; they are
 // simply looked at by other macro invocations.
 //
+// If the new one-at-a-time builder method is given the same name as the field,
+// avoid generating an all-at-once builder method for that field because the
+// names would conflict.
+//
 //
 // Resources:
 //
 //   - Relevant syntax tree types:
-//     https://docs.rs/syn/0.15/syn/struct.Attribute.html
-//     https://docs.rs/syn/0.15/syn/enum.Meta.html
+//     https://docs.rs/syn/1.0/syn/struct.Attribute.html
+//     https://docs.rs/syn/1.0/syn/enum.Meta.html
 
 use derive_builder::Builder;
 
@@ -46,4 +50,5 @@ fn main() {
         .unwrap();
 
     assert_eq!(command.executable, "cargo");
+    assert_eq!(command.args, vec!["build", "--release"]);
 }

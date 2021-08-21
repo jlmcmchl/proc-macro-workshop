@@ -1,8 +1,3 @@
-#![feature(proc_macro_span)]
-extern crate proc_macro;
-
-use core::iter::FromIterator;
-
 use proc_macro::TokenStream;
 use proc_macro2::TokenTree;
 use quote::quote;
