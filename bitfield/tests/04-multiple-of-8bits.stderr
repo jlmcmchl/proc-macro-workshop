@@ -3,5 +3,5 @@ error[E0277]: the trait bound `bitfield::checks::SevenMod8: bitfield::checks::To
    |
 53 | #[bitfield]
    | ^^^^^^^^^^^ the trait `bitfield::checks::TotalSizeIsMultipleOfEightBits` is not implemented for `bitfield::checks::SevenMod8`
-
-For more information about this error, try `rustc --explain E0277`.
+   |
+   = note: this error originates in the attribute macro `bitfield` (in Nightly builds, run with -Z macro-backtrace for more info)
