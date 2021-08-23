@@ -14,7 +14,7 @@ fn ty_inner_type<'a>(wrapper: &str, ty: &'a syn::Type) -> std::option::Option<&'
             }
             let inner_ty = inner_ty.args.first().unwrap();
 
-            if let syn::GenericArgument::Type(ref t) = inner_ty.value() {
+            if let syn::GenericArgument::Type(ref t) = inner_ty {
                 return Some(t);
             }
         }
@@ -106,14 +106,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
         .iter()
         .filter_map(|attr| {
             if let Ok(syn::Meta::List(list)) = attr.parse_meta() {
-                if list.ident != "debug" {
+                if list.path.get_ident().unwrap().to_string() != "debug" {
                     return None;
                 }
 
                 for meta in list.nested {
                     match meta {
                         syn::NestedMeta::Meta(syn::Meta::NameValue(name_value)) => {
-                            assert_eq!(name_value.ident, "bound");
+                            assert_eq!(name_value.path.get_ident().unwrap().to_string(), "bound");
 
                             if let syn::Lit::Str(lit_str) = name_value.lit {
                                 return Some(lit_str.parse().unwrap());
@@ -168,7 +168,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 field(stringify!(#name), &self.#name)
             }
         } else if let Ok(syn::Meta::NameValue(name_value)) = field.attrs[0].parse_meta() {
-            if name_value.ident != "debug" {
+            if name_value.path.get_ident().unwrap().to_string() != "debug" {
                 return syn::Error::new_spanned(name_value, "expected `debug = \"...\"`")
                     .to_compile_error();
             }

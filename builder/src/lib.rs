@@ -15,7 +15,7 @@ fn ty_inner_type<'a>(wrapper: &str, ty: &'a syn::Type) -> std::option::Option<&'
             }
             let inner_ty = inner_ty.args.first().unwrap();
 
-            if let syn::GenericArgument::Type(ref t) = inner_ty.value() {
+            if let syn::GenericArgument::Type(ref t) = inner_ty {
                 return Some(t);
             }
         }
@@ -99,10 +99,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
             if let Ok(list) = attr.parse_meta() {
                 if let syn::Meta::List(syn::MetaList { nested, .. }) = list.clone() {
                     if let std::option::Option::Some(pair) = nested.first() {
-                        if let syn::NestedMeta::Meta(syn::Meta::NameValue(name_value)) =
-                            pair.value()
-                        {
-                            if name_value.ident != "each" {
+                        if let syn::NestedMeta::Meta(syn::Meta::NameValue(name_value)) = pair {
+                            if name_value.path.get_ident().unwrap().to_string() != "each" {
                                 return std::option::Option::Some(
                                     syn::Error::new_spanned(
                                         list,

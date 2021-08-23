@@ -1,6 +1,7 @@
+#![feature(proc_macro_quote)]
+use proc_macro::quote;
 use proc_macro::TokenStream;
 use proc_macro2::TokenTree;
-use quote::quote;
 use syn::{parse_macro_input, Ident, LitInt, Token};
 
 #[derive(Clone)]
@@ -14,11 +15,11 @@ struct Seq {
 
 impl Seq {
     fn range(&self) -> std::ops::Range<u64> {
-        self.start_range.value()..self.end_range.value()
+        self.start_range.base10_parse().unwrap()..self.end_range.base10_parse().unwrap()
     }
 
     fn range_inclusive(&self) -> std::ops::RangeInclusive<u64> {
-        self.start_range.value()..=self.end_range.value()
+        self.start_range.base10_parse().unwrap()..=self.end_range.base10_parse().unwrap()
     }
 }
 
@@ -67,7 +68,7 @@ fn recurse_repeat_replace(
 
                 out.push(TokenTree::Group(proc_macro2::Group::new(
                     group.delimiter(),
-                    proc_macro2::TokenStream::from_iter(tree_vec),
+                    tree_vec.iter().cloned().collect(),
                 )));
             }
             TokenTree::Ident(tree_ident) => {
@@ -206,5 +207,7 @@ pub fn seq(input: TokenStream) -> TokenStream {
         }
     }
 
-    TokenStream::from(proc_macro2::TokenStream::from_iter(expanded))
+    quote! {
+        #(#expanded)*
+    }
 }

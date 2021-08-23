@@ -14,7 +14,7 @@ impl VisitMut for Visitor {
             .attrs
             .iter()
             .enumerate()
-            .find(|attr| attr.1.path.segments.first().unwrap().value().ident == "sorted");
+            .find(|attr| attr.1.path.segments.first().unwrap().ident == "sorted");
 
         match sorted_attr {
             None => {}
@@ -34,9 +34,9 @@ fn is_sorted(arms: &[syn::Arm]) -> syn::Result<()> {
     for arm in arms {
         let mut arm_path = None;
         let mut arm_ident = None;
-        match get_path(arm.pats.first().unwrap().value()) {
+        match get_path(&arm.pat) {
             Ok(path) => arm_path = Some(path),
-            Err(error) => match arm.pats.first().unwrap().value() {
+            Err(error) => match &arm.pat {
                 syn::Pat::Ident(ident) => arm_ident = Some(ident),
                 syn::Pat::Wild(_) => {
                     return Ok(());
@@ -54,9 +54,9 @@ fn is_sorted(arms: &[syn::Arm]) -> syn::Result<()> {
 
             let mut check_path = None;
             let mut check_ident = None;
-            match get_path(check.pats.first().unwrap().value()) {
+            match get_path(&check.pat) {
                 Ok(path) => check_path = Some(path),
-                Err(error) => match arm.pats.first().unwrap().value() {
+                Err(error) => match &check.pat {
                     syn::Pat::Ident(ident) => check_ident = Some(ident),
                     syn::Pat::Wild(_) => {
                         return Ok(());
@@ -77,10 +77,9 @@ fn is_sorted(arms: &[syn::Arm]) -> syn::Result<()> {
                 let span = segments
                     .first()
                     .unwrap()
-                    .value()
                     .span()
                     .unwrap()
-                    .join(segments.last().unwrap().value().span().unwrap())
+                    .join(segments.last().unwrap().span().unwrap())
                     .unwrap();
 
                 return Err(syn::Error::new(
@@ -135,7 +134,7 @@ fn lt(curr_path: &syn::Path, other_path: &syn::Path) -> bool {
 }
 
 fn tts(path: &syn::Path) -> proc_macro2::TokenStream {
-    quote!{#path}
+    quote! {#path}
 }
 
 fn enum_check(item: &Item) -> syn::Result<&Item> {
