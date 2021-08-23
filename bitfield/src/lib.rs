@@ -13,3 +13,9 @@
 pub use bitfield_impl::bitfield;
 
 // TODO other things
+use bitfield_impl::typegen;
+
+#[typegen(Specifier, BITS, u8)]
+pub trait Specifier {
+    const BITS: u8;
+}
