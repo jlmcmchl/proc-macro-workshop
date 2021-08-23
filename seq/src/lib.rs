@@ -10,7 +10,7 @@ struct Seq {
     start_range: LitInt,
     end_range: LitInt,
     body: Vec<proc_macro2::TokenTree>,
-    inclusive: Option<Token![=]>,
+    inclusive: bool,
 }
 
 impl Seq {
@@ -29,7 +29,7 @@ impl syn::parse::Parse for Seq {
         input.parse::<Token![in]>()?;
         let start_range: LitInt = input.parse()?;
         input.parse::<Token![..]>()?;
-        let inclusive = input.parse::<Token![=]>().ok();
+        let inclusive = input.parse::<Token![=]>().is_ok();
         let end_range: LitInt = input.parse()?;
 
         let group: proc_macro2::Group = input.parse()?;
@@ -104,7 +104,7 @@ fn recurse_repeat_replace(
                             if next_punct.as_char() == '*'
                                 && next_group.delimiter() == proc_macro2::Delimiter::Parenthesis
                             {
-                                if seq.inclusive.is_some() {
+                                if seq.inclusive {
                                     for j in seq.range_inclusive() {
                                         let mut new_seq = seq.clone();
                                         let subtree = next_group.stream().into_iter().collect();
@@ -195,7 +195,7 @@ pub fn seq(input: TokenStream) -> TokenStream {
     if has_repetition_syntax(&seq.body) {
         let literal = proc_macro2::Literal::u64_unsuffixed(0);
         recurse_repeat_replace(&seq, &literal, &mut expanded);
-    } else if seq.inclusive.is_some() {
+    } else if seq.inclusive {
         for i in seq.range_inclusive() {
             let literal = proc_macro2::Literal::u64_unsuffixed(i);
             recurse_repeat_replace(&seq, &literal, &mut expanded);
@@ -207,7 +207,12 @@ pub fn seq(input: TokenStream) -> TokenStream {
         }
     }
 
+    let expanded: proc_macro2::TokenStream = expanded
+        .iter()
+        .map(|tt| proc_macro2::TokenStream::from(tt.clone()))
+        .collect();
+
     quote! {
-        #(#expanded)*
+        $expanded
     }
 }
