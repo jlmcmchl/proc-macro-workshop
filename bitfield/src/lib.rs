@@ -13,9 +13,16 @@
 pub use bitfield_impl::bitfield;
 
 // TODO other things
-use bitfield_impl::typegen;
+use seq::seq;
 
-#[typegen(Specifier, BITS, u8)]
 pub trait Specifier {
-    const BITS: u8;
+    const BITS: usize;
 }
+
+seq!(N in 1..=64 {
+    pub enum B#N {}
+
+    impl Specifier for B#N {
+        const BITS: usize = N;
+    }
+});

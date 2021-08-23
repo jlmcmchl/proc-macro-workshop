@@ -3,66 +3,45 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Ident, Token, Type};
+use syn::{DeriveInput, Ident, Token, Type, parse_macro_input};
 
 #[proc_macro_attribute]
 pub fn bitfield(args: TokenStream, input: TokenStream) -> TokenStream {
-    eprintln!("ARGS: {:?}", args);
-    eprintln!("INPUT: {:?}", input);
+    let _ = args;
+    // eprintln!("ARGS: {:?}", args);
+    // eprintln!("INPUT: {:?}", input);
+    let ast = parse_macro_input!(input as DeriveInput);
 
-    
+    let fields = if let syn::Data::Struct(syn::DataStruct {
+        fields: syn::Fields::Named(syn::FieldsNamed { ref named, .. }),
+        ..
+    }) = ast.data
+    {
+        named
+    } else {
+        unimplemented!();
+    };
 
-    proc_macro::quote! (
-        #[repr(C)]
-        pub struct MyFourBytes {
-            data: [u8; 4],
+    let attrs = ast.attrs;
+    let vis = ast.vis;
+    let ident = ast.ident;
+    let generics = ast.generics;
+
+    let size = fields.iter().map(|field| {
+        let ty = field.ty.clone();
+        quote!{
+            <#ty as bitfield::Specifier>::BITS 
         }
-    )
-}
+    }).collect::<Vec<_>>();
 
-struct Typegen {
-    pub trait_: Ident,
-    pub field: Ident,
-    pub ty: Type,
-}
 
-impl Parse for Typegen {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let trait_ = input.parse()?;
-        input.parse::<Token![,]>()?;
-        let field = input.parse()?;
-        input.parse::<Token![,]>()?;
-        let ty = input.parse()?;
-        Ok(Typegen { trait_, field, ty })
-    }
-}
+    let expanded = quote! {
+        #[repr(C)]
+        #(#attrs)*
+        #vis struct #ident #generics {
+            data: [u8; (#(#size)+*) / 8usize]
+        }
+    };
 
-#[proc_macro_attribute]
-pub fn typegen(args: TokenStream, input: TokenStream) -> TokenStream {
-    let typegen = parse_macro_input!(args as Typegen);
-
-    let impls: TokenStream = (1..=64)
-        .map(|i| {
-            let trait_ = typegen.trait_.clone();
-            let field = typegen.field.clone();
-            let ty = typegen.ty.clone();
-            let ident = syn::Ident::new(&format!("B{}", i), proc_macro2::Span::call_site());
-            let literal = syn::LitInt::new(&format!("{}", i), proc_macro2::Span::call_site());
-
-            quote! {
-                pub enum #ident {}
-
-                impl #trait_ for #ident {
-                    const #field: #ty = #literal;
-                }
-            }
-        })
-        .collect::<proc_macro2::TokenStream>()
-        .into();
-
-    proc_macro::quote! (
-        $input
-
-        $impls
-    )
+    TokenStream::from(expanded)
 }
