@@ -72,9 +72,10 @@ pub fn bitfield(args: TokenStream, input: TokenStream) -> TokenStream {
                 let mut ind = 0;
                 while mask > 0 {
                     let temp = self.data[ind] & ((mask & 0xff) as u8);
-                    res <<= 8;
 
-                    res |= (temp as u64);
+                    res |= (temp as u64) << (8 * ind);
+                    // println!("READ {} {:#b} {:#b} {:#b} {:#b}", ind, self.data[ind], temp, mask, res);
+
                     mask >>= 8;
 
                     ind += 1;
