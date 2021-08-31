@@ -62,7 +62,7 @@ pub fn bitfield(args: TokenStream, input: TokenStream) -> TokenStream {
         let offset = get_offset(&field, &fields);
 
         quote! {
-            pub fn #get_fname(&self) -> u64 {
+            pub fn #get_fname(&self) -> <#ty as bitfield::Specifier>::SIGNATURE {
                 let offset = #offset;
                 let len = <#ty as bitfield::Specifier>::BITS;
                 let mut res: u64 = 0;
@@ -81,10 +81,11 @@ pub fn bitfield(args: TokenStream, input: TokenStream) -> TokenStream {
                     ind += 1;
                 }
                 // println!("READ {:#b}", res);
-                res >> offset
+                std::convert::TryInto::<<#ty as bitfield::Specifier>::SIGNATURE>::try_into(res >> offset).unwrap()
             }
 
-            pub fn #set_fname(&mut self, arg: u64) {
+            pub fn #set_fname(&mut self, arg: <#ty as bitfield::Specifier>::SIGNATURE) {
+                let arg = arg as u64;
                 let offset = #offset;
                 let len = <#ty as bitfield::Specifier>::BITS;
                 let mut arg = arg << offset;

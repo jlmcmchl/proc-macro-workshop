@@ -17,12 +17,46 @@ use seq::seq;
 
 pub trait Specifier {
     const BITS: usize;
+    type SIGNATURE;
 }
 
-seq!(N in 1..=64 {
+impl Specifier for bool {
+    const BITS: usize = 1;
+    type SIGNATURE = bool;
+}
+
+seq!(N in 1..=8 {
     pub enum B#N {}
 
     impl Specifier for B#N {
         const BITS: usize = N;
+        type SIGNATURE = u8;
+    }
+});
+
+seq!(N in 9..=16 {
+    pub enum B#N {}
+
+    impl Specifier for B#N {
+        const BITS: usize = N;
+        type SIGNATURE = u16;
+    }
+});
+
+seq!(N in 17..=32 {
+    pub enum B#N {}
+
+    impl Specifier for B#N {
+        const BITS: usize = N;
+        type SIGNATURE = u32;
+    }
+});
+
+seq!(N in 33..=64 {
+    pub enum B#N {}
+
+    impl Specifier for B#N {
+        const BITS: usize = N;
+        type SIGNATURE = u64;
     }
 });
